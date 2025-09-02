@@ -122,10 +122,12 @@ const AdminDashboard = () => {
       };
       setStats(mockStats);
 
+      // Define API URL for all requests
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      
       // Try to fetch real quotes
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const quotesResponse = await fetch(`${apiUrl}/api/quotes`);
+        const quotesResponse = await fetch(`${apiUrl}/api/quotes`);
         if (quotesResponse.ok) {
           const quotesData = await quotesResponse.json();
           if (quotesData.success) {
