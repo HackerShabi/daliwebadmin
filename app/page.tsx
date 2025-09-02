@@ -89,41 +89,52 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       
-      // For now, use mock data since admin API endpoints don't exist yet
-      // TODO: Replace with actual API calls when backend is ready
-      
-      // Mock dashboard stats
-      const mockStats: DashboardStats = {
-        quotes: {
-          total: 25,
-          pending: 8,
-          inProgress: 12,
-          completed: 5,
-          today: 3,
-          thisWeek: 15,
-          thisMonth: 25
-        },
-        demos: {
-          total: 12,
-          pending: 4,
-          confirmed: 6,
-          completed: 2,
-          cancelled: 0,
-          paymentPending: 2,
-          paymentCompleted: 10,
-          today: 1,
-          thisWeek: 8,
-          thisMonth: 12
-        },
-        revenue: {
-          totalRevenue: 3588,
-          averageBookingValue: 299
-        }
-      };
-      setStats(mockStats);
-
       // Define API URL for all requests
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
+      
+      // Fetch real dashboard statistics
+      try {
+        console.log('Fetching dashboard stats from:', `${apiUrl}/api/admin/dashboard`);
+        const dashboardResponse = await fetch(`${apiUrl}/api/admin/dashboard`);
+        console.log('Dashboard response status:', dashboardResponse.status);
+        if (dashboardResponse.ok) {
+          const dashboardData = await dashboardResponse.json();
+          console.log('Dashboard data received:', dashboardData);
+          if (dashboardData.success) {
+            const realStats: DashboardStats = {
+              quotes: dashboardData.data.quotes,
+              demos: dashboardData.data.demos,
+              revenue: {
+                totalRevenue: dashboardData.data.revenue.total || 0,
+                averageBookingValue: dashboardData.data.revenue.average || 0
+              }
+            };
+            setStats(realStats);
+            console.log('Dashboard stats set:', realStats);
+          } else {
+            console.error('Dashboard API returned success: false', dashboardData);
+            setStats({
+              quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+              demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+              revenue: { totalRevenue: 0, averageBookingValue: 0 }
+            });
+          }
+        } else {
+          console.error('Dashboard API response not ok:', dashboardResponse.status, dashboardResponse.statusText);
+          setStats({
+            quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+            demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+            revenue: { totalRevenue: 0, averageBookingValue: 0 }
+          });
+        }
+      } catch (dashboardError) {
+        console.error('Dashboard API error:', dashboardError);
+        setStats({
+          quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          revenue: { totalRevenue: 0, averageBookingValue: 0 }
+        });
+      }
       
       // Try to fetch real quotes
       try {
