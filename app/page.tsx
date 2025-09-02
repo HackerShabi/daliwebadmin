@@ -127,29 +127,49 @@ const AdminDashboard = () => {
       
       // Try to fetch real quotes
       try {
+        console.log('Fetching quotes from:', `${apiUrl}/api/quotes`);
         const quotesResponse = await fetch(`${apiUrl}/api/quotes`);
+        console.log('Quotes response status:', quotesResponse.status);
         if (quotesResponse.ok) {
           const quotesData = await quotesResponse.json();
+          console.log('Quotes data received:', quotesData);
           if (quotesData.success) {
             setQuotes(quotesData.data || []);
+            console.log('Quotes set:', quotesData.data?.length || 0, 'items');
+          } else {
+            console.error('Quotes API returned success: false', quotesData);
+            setQuotes([]);
           }
+        } else {
+          console.error('Quotes API response not ok:', quotesResponse.status, quotesResponse.statusText);
+          setQuotes([]);
         }
       } catch (quotesError) {
-        console.log('Quotes API not available, using empty array');
+        console.error('Quotes API error:', quotesError);
         setQuotes([]);
       }
 
       // Try to fetch real demo bookings
       try {
+        console.log('Fetching demos from:', `${apiUrl}/api/demos`);
         const demosResponse = await fetch(`${apiUrl}/api/demos`);
+        console.log('Demos response status:', demosResponse.status);
         if (demosResponse.ok) {
           const demosData = await demosResponse.json();
+          console.log('Demos data received:', demosData);
           if (demosData.success) {
             setDemoBookings(demosData.data || []);
+            console.log('Demo bookings set:', demosData.data?.length || 0, 'items');
+          } else {
+            console.error('Demos API returned success: false', demosData);
+            setDemoBookings([]);
           }
+        } else {
+          console.error('Demos API response not ok:', demosResponse.status, demosResponse.statusText);
+          setDemoBookings([]);
         }
       } catch (demosError) {
-        console.log('Demos API not available, using empty array');
+        console.error('Demos API error:', demosError);
         setDemoBookings([]);
       }
     } catch (error) {
