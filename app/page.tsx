@@ -119,7 +119,7 @@ const AdminDashboard = () => {
       setLoading(true);
       
       // Define API URL for all requests
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       
       // Fetch real dashboard statistics
       try {
@@ -223,8 +223,8 @@ const AdminDashboard = () => {
 
       // Try to fetch real package orders
       try {
-        console.log('Fetching packages from:', `${apiUrl}/api/packages`);
-        const packagesResponse = await fetch(`${apiUrl}/api/packages`);
+        console.log('Fetching packages from:', `${apiUrl}/api/packages/orders`);
+        const packagesResponse = await fetch(`${apiUrl}/api/packages/orders`);
         console.log('Packages response status:', packagesResponse.status);
         if (packagesResponse.ok) {
           const packagesData = await packagesResponse.json();
@@ -501,7 +501,7 @@ const AdminDashboard = () => {
                             {quote.status}
                           </span>
                           <p className="text-xs text-gray-500 mt-1">
-                            {format(new Date(quote.createdAt), 'MMM dd, yyyy')}
+                            {quote.createdAt ? format(new Date(quote.createdAt), 'MMM dd, yyyy') : 'N/A'}
                           </p>
                         </div>
                       </div>
@@ -648,10 +648,10 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {format(new Date(quote.createdAt), 'MMM dd, yyyy')}
+                            {quote.createdAt ? format(new Date(quote.createdAt), 'MMM dd, yyyy') : 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {format(new Date(quote.createdAt), 'HH:mm')}
+                            {quote.createdAt ? format(new Date(quote.createdAt), 'HH:mm') : 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -763,11 +763,11 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {format(new Date(demo.preferredDate), 'MMM dd, yyyy')}
+                            {demo.preferredDate ? format(new Date(demo.preferredDate), 'MMM dd, yyyy') : 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500 flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
-                            {demo.preferredTime}
+                            {demo.preferredTime || 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -789,10 +789,10 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {format(new Date(demo.createdAt), 'MMM dd, yyyy')}
+                            {demo.createdAt ? format(new Date(demo.createdAt), 'MMM dd, yyyy') : 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {format(new Date(demo.createdAt), 'HH:mm')}
+                            {demo.createdAt ? format(new Date(demo.createdAt), 'HH:mm') : 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -930,10 +930,10 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {format(new Date(pkg.createdAt), 'MMM dd, yyyy')}
+                            {pkg.createdAt ? format(new Date(pkg.createdAt), 'MMM dd, yyyy') : 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {format(new Date(pkg.createdAt), 'HH:mm')}
+                            {pkg.createdAt ? format(new Date(pkg.createdAt), 'HH:mm') : 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
