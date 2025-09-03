@@ -17,7 +17,8 @@ import {
   Edit,
   Trash2,
   RefreshCw,
-  Package
+  Package,
+  X
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -113,6 +114,9 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [modalType, setModalType] = useState<'quote' | 'demo' | 'package' | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -316,6 +320,37 @@ const AdminDashboard = () => {
     }
   };
 
+  const getPackagePlanName = (packageType: string, price: number) => {
+    // Map package types to plan names based on price
+    if (price === 99) return 'Starter Plan';
+    if (price === 499) return 'Business Plan';
+    if (price === 999) return 'Premium Plan';
+    
+    // Fallback to packageType if price doesn't match standard plans
+    switch (packageType?.toLowerCase()) {
+      case 'starter':
+        return 'Starter Plan';
+      case 'business':
+        return 'Business Plan';
+      case 'premium':
+        return 'Premium Plan';
+      default:
+        return packageType || 'Unknown Plan';
+    }
+  };
+
+  const openModal = (item: any, type: 'quote' | 'demo' | 'package') => {
+    setSelectedItem(item);
+    setModalType(type);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setSelectedItem(null);
+    setModalType(null);
+    setShowModal(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -378,6 +413,82 @@ const AdminDashboard = () => {
         {activeTab === 'overview' && stats && (
           <div className="space-y-8">
             {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+              {/* Plan Revenue Cards */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-blue-600 font-bold text-sm">$99</span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Starter Plan</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {packageOrders.filter(pkg => pkg.packagePrice === 99).length}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="text-blue-600 font-medium">
+                      ${(packageOrders.filter(pkg => pkg.packagePrice === 99).length * 99).toLocaleString()}
+                    </span>
+                    <span className="ml-1">revenue</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
+                      <span className="text-orange-600 font-bold text-xs">$499</span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Business Plan</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {packageOrders.filter(pkg => pkg.packagePrice === 499).length}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="text-orange-600 font-medium">
+                      ${(packageOrders.filter(pkg => pkg.packagePrice === 499).length * 499).toLocaleString()}
+                    </span>
+                    <span className="ml-1">revenue</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <span className="text-purple-600 font-bold text-xs">$999</span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Premium Plan</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {packageOrders.filter(pkg => pkg.packagePrice === 999).length}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="text-purple-600 font-medium">
+                      ${(packageOrders.filter(pkg => pkg.packagePrice === 999).length * 999).toLocaleString()}
+                    </span>
+                    <span className="ml-1">revenue</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* General Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
@@ -656,11 +767,18 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">
+                            <button 
+                              onClick={() => openModal(quote, 'quote')}
+                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                              title="View Details"
+                            >
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button className="text-green-600 hover:text-green-900">
+                            <button className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50" title="Edit">
                               <Edit className="h-4 w-4" />
+                            </button>
+                            <button className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50" title="Delete">
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </td>
@@ -797,11 +915,18 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">
+                            <button 
+                              onClick={() => openModal(demo, 'demo')}
+                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                              title="View Details"
+                            >
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button className="text-green-600 hover:text-green-900">
+                            <button className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50" title="Edit">
                               <Edit className="h-4 w-4" />
+                            </button>
+                            <button className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50" title="Delete">
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </td>
@@ -906,13 +1031,19 @@ const AdminDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{pkg.packageType}</div>
+                          <div className="text-sm font-medium text-gray-900">{getPackagePlanName(pkg.packageType, pkg.packagePrice)}</div>
+                          <div className="text-xs text-gray-500">{pkg.packageType}</div>
                           {pkg.message && (
-                            <div className="text-sm text-gray-500 truncate max-w-xs">{pkg.message}</div>
+                            <div className="text-sm text-gray-500 truncate max-w-xs mt-1">{pkg.message}</div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">${pkg.packagePrice}</div>
+                          <div className="text-xs text-gray-500">
+                            {pkg.packagePrice === 99 && 'Starter'}
+                            {pkg.packagePrice === 499 && 'Business'}
+                            {pkg.packagePrice === 999 && 'Premium'}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -938,11 +1069,18 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">
+                            <button 
+                              onClick={() => openModal(pkg, 'package')}
+                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                              title="View Details"
+                            >
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button className="text-green-600 hover:text-green-900">
+                            <button className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50" title="Edit">
                               <Edit className="h-4 w-4" />
+                            </button>
+                            <button className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50" title="Delete">
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </td>
@@ -950,6 +1088,228 @@ const AdminDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Detail Modal */}
+        {showModal && selectedItem && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {modalType === 'quote' && 'Quote Request Details'}
+                  {modalType === 'demo' && 'Demo Booking Details'}
+                  {modalType === 'package' && 'Package Order Details'}
+                </h3>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* Contact Information */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Contact Information</h4>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 text-gray-400 mr-2" />
+                      <span className="text-sm font-medium text-gray-900">{selectedItem.name}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-600">{selectedItem.email}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-600">{selectedItem.phone}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Building className="h-4 w-4 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-600 capitalize">{selectedItem.businessType}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Request Specific Information */}
+                {modalType === 'quote' && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Quote Details</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span>
+                        <div className="mt-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedItem.status)}`}>
+                            {selectedItem.status}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</span>
+                        <div className="mt-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(selectedItem.priority)}`}>
+                            {selectedItem.priority}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Source</span>
+                        <p className="text-sm text-gray-900 mt-1 capitalize">{selectedItem.source}</p>
+                      </div>
+                      {selectedItem.message && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Message</span>
+                          <p className="text-sm text-gray-900 mt-1">{selectedItem.message}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {modalType === 'demo' && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Demo Booking Details</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Preferred Date & Time</span>
+                        <div className="mt-1 flex items-center space-x-4">
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 text-gray-400 mr-1" />
+                            <span className="text-sm text-gray-900">
+                              {selectedItem.preferredDate ? format(new Date(selectedItem.preferredDate), 'MMM dd, yyyy') : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 text-gray-400 mr-1" />
+                            <span className="text-sm text-gray-900">{selectedItem.preferredTime || 'N/A'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Information</span>
+                        <div className="mt-1 flex items-center space-x-4">
+                          <div className="flex items-center">
+                            <DollarSign className="h-4 w-4 text-gray-400 mr-1" />
+                            <span className="text-sm font-medium text-gray-900">${(selectedItem.paymentAmount || 0).toLocaleString()}</span>
+                          </div>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            selectedItem.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                            selectedItem.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {selectedItem.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Status</span>
+                        <div className="mt-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedItem.bookingStatus)}`}>
+                            {selectedItem.bookingStatus}
+                          </span>
+                        </div>
+                      </div>
+                      {selectedItem.message && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Additional Notes</span>
+                          <p className="text-sm text-gray-900 mt-1">{selectedItem.message}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {modalType === 'package' && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Package Order Details</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Package Information</span>
+                        <div className="mt-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-900">{getPackagePlanName(selectedItem.packageType, selectedItem.packagePrice)}</span>
+                            <span className="text-lg font-bold text-gray-900">${selectedItem.packagePrice}</span>
+                          </div>
+                          <div className="text-xs text-gray-500">{selectedItem.packageType}</div>
+                          <div className="text-xs text-gray-500">
+                            {selectedItem.packagePrice === 99 && 'Starter Plan - Basic website package'}
+                            {selectedItem.packagePrice === 499 && 'Business Plan - Professional website with advanced features'}
+                            {selectedItem.packagePrice === 999 && 'Premium Plan - Enterprise-level website solution'}
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</span>
+                        <div className="mt-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            selectedItem.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                            selectedItem.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {selectedItem.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Order Status</span>
+                        <div className="mt-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedItem.orderStatus)}`}>
+                            {selectedItem.orderStatus}
+                          </span>
+                        </div>
+                      </div>
+                      {selectedItem.message && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Special Requirements</span>
+                          <p className="text-sm text-gray-900 mt-1">{selectedItem.message}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Timestamps */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Timeline</h4>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Created</span>
+                        <div className="text-sm text-gray-900">
+                          {selectedItem.createdAt ? format(new Date(selectedItem.createdAt), 'MMM dd, yyyy \\at HH:mm') : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <button
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  Close
+                </button>
+                <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                  Edit
+                </button>
+                {(modalType === 'quote' || modalType === 'demo') && (
+                  <>
+                    <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                      Accept
+                    </button>
+                    <button className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                      Reject
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
