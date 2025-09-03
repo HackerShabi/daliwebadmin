@@ -16,7 +16,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Package
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -48,6 +49,20 @@ interface DemoBooking {
   createdAt: string;
 }
 
+interface PackageOrder {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  businessType: string;
+  packageType: string;
+  packagePrice: number;
+  paymentStatus: string;
+  orderStatus: string;
+  message?: string;
+  createdAt: string;
+}
+
 interface DashboardStats {
   quotes: {
     total: number;
@@ -70,9 +85,22 @@ interface DashboardStats {
     thisWeek: number;
     thisMonth: number;
   };
+  packages: {
+    total: number;
+    pending: number;
+    processing: number;
+    completed: number;
+    cancelled: number;
+    paymentPending: number;
+    paymentCompleted: number;
+    today: number;
+    thisWeek: number;
+    thisMonth: number;
+  };
   revenue: {
     totalRevenue: number;
     averageBookingValue: number;
+    packageRevenue: number;
   };
 }
 
@@ -80,6 +108,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [demoBookings, setDemoBookings] = useState<DemoBooking[]>([]);
+  const [packageOrders, setPackageOrders] = useState<PackageOrder[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,9 +133,14 @@ const AdminDashboard = () => {
             const realStats: DashboardStats = {
               quotes: dashboardData.data.quotes,
               demos: dashboardData.data.demos,
+              packages: dashboardData.data.packages || {
+                total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0,
+                paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0
+              },
               revenue: {
                 totalRevenue: dashboardData.data.revenue.total || 0,
-                averageBookingValue: dashboardData.data.revenue.average || 0
+                averageBookingValue: dashboardData.data.revenue.average || 0,
+                packageRevenue: dashboardData.data.revenue.packages || 0
               }
             };
             setStats(realStats);
@@ -116,7 +150,8 @@ const AdminDashboard = () => {
             setStats({
               quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
               demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
-              revenue: { totalRevenue: 0, averageBookingValue: 0 }
+              packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+              revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
             });
           }
         } else {
@@ -124,7 +159,8 @@ const AdminDashboard = () => {
           setStats({
             quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
             demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
-            revenue: { totalRevenue: 0, averageBookingValue: 0 }
+            packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+            revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
           });
         }
       } catch (dashboardError) {
@@ -132,7 +168,8 @@ const AdminDashboard = () => {
         setStats({
           quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
           demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
-          revenue: { totalRevenue: 0, averageBookingValue: 0 }
+          packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
         });
       }
       
@@ -183,16 +220,42 @@ const AdminDashboard = () => {
         console.error('Demos API error:', demosError);
         setDemoBookings([]);
       }
+
+      // Try to fetch real package orders
+      try {
+        console.log('Fetching packages from:', `${apiUrl}/api/packages`);
+        const packagesResponse = await fetch(`${apiUrl}/api/packages`);
+        console.log('Packages response status:', packagesResponse.status);
+        if (packagesResponse.ok) {
+          const packagesData = await packagesResponse.json();
+          console.log('Packages data received:', packagesData);
+          if (packagesData.success) {
+            setPackageOrders(packagesData.data || []);
+            console.log('Package orders set:', packagesData.data?.length || 0, 'items');
+          } else {
+            console.error('Packages API returned success: false', packagesData);
+            setPackageOrders([]);
+          }
+        } else {
+          console.error('Packages API response not ok:', packagesResponse.status, packagesResponse.statusText);
+          setPackageOrders([]);
+        }
+      } catch (packagesError) {
+        console.error('Packages API error:', packagesError);
+        setPackageOrders([]);
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       // Set default empty state on error
       setStats({
         quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
         demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
-        revenue: { totalRevenue: 0, averageBookingValue: 0 }
+        packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+        revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
       });
       setQuotes([]);
       setDemoBookings([]);
+      setPackageOrders([]);
     } finally {
       setLoading(false);
     }
@@ -213,6 +276,13 @@ const AdminDashboard = () => {
     const matchesSearch = demo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          demo.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || demo.bookingStatus === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  const filteredPackages = packageOrders.filter(pkg => {
+    const matchesSearch = pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         pkg.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || pkg.orderStatus === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
@@ -285,7 +355,8 @@ const AdminDashboard = () => {
             {[
               { id: 'overview', name: 'Overview', icon: TrendingUp },
               { id: 'quotes', name: 'Quote Requests', icon: Users },
-              { id: 'demos', name: 'Demo Bookings', icon: Calendar }
+              { id: 'demos', name: 'Demo Bookings', icon: Calendar },
+              { id: 'packages', name: 'Package Orders', icon: Package }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -307,7 +378,7 @@ const AdminDashboard = () => {
         {activeTab === 'overview' && stats && (
           <div className="space-y-8">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -339,6 +410,24 @@ const AdminDashboard = () => {
                 <div className="mt-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <span className="text-green-600 font-medium">+{stats.demos.today}</span>
+                    <span className="ml-1">today</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Package className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Package Orders</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.packages.total}</p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="text-green-600 font-medium">+{stats.packages.today}</span>
                     <span className="ml-1">today</span>
                   </div>
                 </div>
@@ -704,6 +793,147 @@ const AdminDashboard = () => {
                           </div>
                           <div className="text-sm text-gray-500">
                             {format(new Date(demo.createdAt), 'HH:mm')}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button className="text-blue-600 hover:text-blue-900">
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button className="text-green-600 hover:text-green-900">
+                              <Edit className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Package Orders Tab */}
+        {activeTab === 'packages' && (
+          <div className="space-y-6">
+            {/* Filters */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search package orders..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="sm:w-48">
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Package Orders Table */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Package Orders ({filteredPackages.length})</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Contact
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Business Type
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Package
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Payment Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Order Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredPackages.map((pkg) => (
+                      <tr key={pkg._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{pkg.name}</div>
+                            <div className="text-sm text-gray-500 flex items-center">
+                              <Mail className="h-3 w-3 mr-1" />
+                              {pkg.email}
+                            </div>
+                            <div className="text-sm text-gray-500 flex items-center">
+                              <Phone className="h-3 w-3 mr-1" />
+                              {pkg.phone}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Building className="h-4 w-4 text-gray-400 mr-2" />
+                            <span className="text-sm text-gray-900">{pkg.businessType}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{pkg.packageType}</div>
+                          {pkg.message && (
+                            <div className="text-sm text-gray-500 truncate max-w-xs">{pkg.message}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">${pkg.packagePrice}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            pkg.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                            pkg.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {pkg.paymentStatus}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(pkg.orderStatus)}`}>
+                            {pkg.orderStatus}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {format(new Date(pkg.createdAt), 'MMM dd, yyyy')}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {format(new Date(pkg.createdAt), 'HH:mm')}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
