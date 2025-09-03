@@ -123,7 +123,7 @@ const AdminDashboard = () => {
       setLoading(true);
       
       // Define API URL for all requests
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
       
       // Fetch real dashboard statistics
       try {
