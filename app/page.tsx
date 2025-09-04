@@ -178,19 +178,66 @@ const AdminDashboard = () => {
         setPackageOrders([]);
       }
 
-      // Try to fetch users from MongoDB
-        try {
-          console.log('Fetching users from:', `${apiUrl}/api/auth/users`);
-        const authResponse = await fetch(`${apiUrl}/api/auth/users`);
+      // Try to fetch users from local auth API
+      try {
+        console.log('Fetching users from local auth API');
+        const authResponse = await fetch('/api/auth');
         console.log('Auth response status:', authResponse.status);
         if (authResponse.ok) {
           const authData = await authResponse.json();
           console.log('Auth data received:', authData);
-          if (authData.success) {
-            setUsers(authData.data || []);
-            console.log('Users set:', authData.data?.length || 0, 'users');
+          if (authData.users) {
+            // Transform the data to match AdminUser interface
+             const transformedUsers: AdminUser[] = authData.users.map((user: any) => ({
+               uid: user.uid,
+               email: user.email,
+               displayName: user.displayName || '',
+               phoneNumber: user.phoneNumber || '',
+               emailVerified: user.emailVerified || false,
+               disabled: user.disabled || false,
+               creationTime: user.creationTime,
+               lastSignInTime: user.lastSignInTime,
+               providerData: user.providerData || [],
+               status: user.status || 'offline',
+               authType: user.authType || 'unknown'
+             }));
+             setUsers(transformedUsers);
+             console.log('Users set:', transformedUsers.length, 'users');
+             
+             // Calculate real-time auth stats
+             const totalUsers = transformedUsers.length;
+             const emailUsers = transformedUsers.filter(user => 
+               user.providerData.some(p => p.providerId === 'password')
+             ).length;
+             const googleUsers = transformedUsers.filter(user => 
+               user.providerData.some(p => p.providerId === 'google.com')
+             ).length;
+             const verifiedUsers = transformedUsers.filter(user => user.emailVerified).length;
+             const activeUsers = transformedUsers.filter(user => (user as any).status === 'online').length;
+             
+             // Calculate today's signups
+             const today = new Date();
+             today.setHours(0, 0, 0, 0);
+             const todayUsers = transformedUsers.filter(user => 
+               new Date(user.creationTime) >= today
+             ).length;
+             
+             // Update stats with real data
+             setStats(prevStats => ({
+               ...prevStats!,
+               auth: {
+                 totalUsers,
+                 emailUsers,
+                 googleUsers,
+                 verifiedUsers,
+                 activeUsers,
+                 today: todayUsers,
+                 thisWeek: 0, // Could be calculated if needed
+                 thisMonth: 0 // Could be calculated if needed
+               }
+             }));
           } else {
-            console.error('Auth API returned success: false', authData);
+            console.error('Auth API response missing users array', authData);
             setUsers([]);
           }
         } else {
@@ -644,6 +691,9 @@ const AdminDashboard = () => {
                         Provider
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Verification
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -797,6 +847,18 @@ const AdminDashboard = () => {
                               user.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                             }`}>
                               {user.disabled ? 'Disabled' : 'Active'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <div className={`h-2 w-2 rounded-full ${
+                              (user as any).status === 'online' ? 'bg-green-400' : 'bg-gray-400'
+                            }`}></div>
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              (user as any).status === 'online' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {(user as any).status === 'online' ? 'Online' : 'Offline'}
                             </span>
                           </div>
                         </td>
