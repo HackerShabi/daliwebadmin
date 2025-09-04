@@ -18,7 +18,10 @@ import {
   Trash2,
   RefreshCw,
   Package,
-  X
+  X,
+  Shield,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -64,6 +67,24 @@ interface PackageOrder {
   createdAt: string;
 }
 
+interface FirebaseUser {
+  uid: string;
+  email: string;
+  displayName?: string;
+  phoneNumber?: string;
+  emailVerified: boolean;
+  disabled: boolean;
+  creationTime: string;
+  lastSignInTime?: string;
+  providerData: Array<{
+    providerId: string;
+    uid: string;
+    displayName?: string;
+    email?: string;
+    phoneNumber?: string;
+  }>;
+}
+
 interface DashboardStats {
   quotes: {
     total: number;
@@ -98,6 +119,16 @@ interface DashboardStats {
     thisWeek: number;
     thisMonth: number;
   };
+  auth: {
+    totalUsers: number;
+    emailUsers: number;
+    googleUsers: number;
+    verifiedUsers: number;
+    activeUsers: number;
+    today: number;
+    thisWeek: number;
+    thisMonth: number;
+  };
   revenue: {
     totalRevenue: number;
     averageBookingValue: number;
@@ -110,12 +141,13 @@ const AdminDashboard = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [demoBookings, setDemoBookings] = useState<DemoBooking[]>([]);
   const [packageOrders, setPackageOrders] = useState<PackageOrder[]>([]);
+  const [firebaseUsers, setFirebaseUsers] = useState<FirebaseUser[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [modalType, setModalType] = useState<'quote' | 'demo' | 'package' | null>(null);
+  const [modalType, setModalType] = useState<'quote' | 'demo' | 'package' | 'auth' | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const fetchDashboardData = async () => {
@@ -141,6 +173,10 @@ const AdminDashboard = () => {
                 total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0,
                 paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0
               },
+              auth: dashboardData.data.auth || {
+                totalUsers: 0, emailUsers: 0, googleUsers: 0, verifiedUsers: 0, activeUsers: 0,
+                today: 0, thisWeek: 0, thisMonth: 0
+              },
               revenue: {
                 totalRevenue: dashboardData.data.revenue.total || 0,
                 averageBookingValue: dashboardData.data.revenue.average || 0,
@@ -155,6 +191,7 @@ const AdminDashboard = () => {
               quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
               demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
               packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+              auth: { totalUsers: 0, emailUsers: 0, googleUsers: 0, verifiedUsers: 0, activeUsers: 0, today: 0, thisWeek: 0, thisMonth: 0 },
               revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
             });
           }
@@ -164,6 +201,7 @@ const AdminDashboard = () => {
             quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
             demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
             packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+            auth: { totalUsers: 0, emailUsers: 0, googleUsers: 0, verifiedUsers: 0, activeUsers: 0, today: 0, thisWeek: 0, thisMonth: 0 },
             revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
           });
         }
@@ -248,18 +286,44 @@ const AdminDashboard = () => {
         console.error('Packages API error:', packagesError);
         setPackageOrders([]);
       }
+
+      // Try to fetch Firebase users
+      try {
+        console.log('Fetching Firebase users from:', `${apiUrl}/api/auth/users`);
+        const authResponse = await fetch(`${apiUrl}/api/auth/users`);
+        console.log('Auth response status:', authResponse.status);
+        if (authResponse.ok) {
+          const authData = await authResponse.json();
+          console.log('Auth data received:', authData);
+          if (authData.success) {
+            setFirebaseUsers(authData.data || []);
+            console.log('Firebase users set:', authData.data?.length || 0, 'users');
+          } else {
+            console.error('Auth API returned success: false', authData);
+            setFirebaseUsers([]);
+          }
+        } else {
+          console.error('Auth API response not ok:', authResponse.status, authResponse.statusText);
+          setFirebaseUsers([]);
+        }
+      } catch (authError) {
+        console.error('Auth API error:', authError);
+        setFirebaseUsers([]);
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       // Set default empty state on error
       setStats({
-        quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
-        demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
-        packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
-        revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
-      });
-      setQuotes([]);
-      setDemoBookings([]);
-      setPackageOrders([]);
+          quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          auth: { totalUsers: 0, emailUsers: 0, googleUsers: 0, verifiedUsers: 0, activeUsers: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
+        });
+        setQuotes([]);
+        setDemoBookings([]);
+        setPackageOrders([]);
+        setFirebaseUsers([]);
     } finally {
       setLoading(false);
     }
@@ -391,7 +455,8 @@ const AdminDashboard = () => {
               { id: 'overview', name: 'Overview', icon: TrendingUp },
               { id: 'quotes', name: 'Quote Requests', icon: Users },
               { id: 'demos', name: 'Demo Bookings', icon: Calendar },
-              { id: 'packages', name: 'Package Orders', icon: Package }
+              { id: 'packages', name: 'Package Orders', icon: Package },
+              { id: 'auth', name: 'Authentication', icon: Shield }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -413,7 +478,7 @@ const AdminDashboard = () => {
         {activeTab === 'overview' && stats && (
           <div className="space-y-8">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <div 
                 onClick={() => setActiveTab('quotes')}
                 className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow duration-200 hover:bg-blue-50"
@@ -472,6 +537,27 @@ const AdminDashboard = () => {
                 <div className="mt-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <span className="text-green-600 font-medium">+{stats.packages.today}</span>
+                    <span className="ml-1">today</span>
+                  </div>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => setActiveTab('auth')}
+                className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow duration-200 hover:bg-indigo-50"
+              >
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Shield className="h-8 w-8 text-indigo-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Total Users</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.auth.totalUsers}</p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="text-green-600 font-medium">+{stats.auth.today}</span>
                     <span className="ml-1">today</span>
                   </div>
                 </div>
@@ -585,6 +671,281 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Authentication Tab */}
+        {activeTab === 'auth' && (
+          <div className="space-y-6">
+            {/* Auth Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.auth.totalUsers}</p>
+                    <p className="text-sm text-gray-500">+{stats.auth.today} today</p>
+                  </div>
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Users className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Email Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.auth.emailUsers}</p>
+                    <p className="text-sm text-gray-500">Email/Password</p>
+                  </div>
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <Mail className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Google Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.auth.googleUsers}</p>
+                    <p className="text-sm text-gray-500">OAuth Sign-in</p>
+                  </div>
+                  <div className="p-3 bg-red-100 rounded-full">
+                    <UserCheck className="h-6 w-6 text-red-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Verified Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.auth.verifiedUsers}</p>
+                    <p className="text-sm text-gray-500">Email Verified</p>
+                  </div>
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <Shield className="h-6 w-6 text-purple-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Firebase Users Table */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Firebase Users ({firebaseUsers.length})</h3>
+              </div>
+              <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Provider
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Last Sign In
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {firebaseUsers.map((user) => (
+                      <tr key={user.uid} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10">
+                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                <Users className="h-5 w-5 text-gray-600" />
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.displayName || 'No Name'}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {user.uid.substring(0, 8)}...
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{user.email}</div>
+                          {user.phoneNumber && (
+                            <div className="text-sm text-gray-500">{user.phoneNumber}</div>
+                          )}
+
+                {modalType === 'auth' && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">User Information</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</span>
+                        <p className="text-sm text-gray-900 mt-1 font-mono">{selectedItem.uid}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Display Name</span>
+                        <p className="text-sm text-gray-900 mt-1">{selectedItem.displayName || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span>
+                        <p className="text-sm text-gray-900 mt-1">{selectedItem.email}</p>
+                      </div>
+                      {selectedItem.phoneNumber && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</span>
+                          <p className="text-sm text-gray-900 mt-1">{selectedItem.phoneNumber}</p>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Authentication Providers</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {selectedItem.providerData.map((provider, index) => (
+                            <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
+                              provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {provider.providerId === 'google.com' ? 'Google' :
+                               provider.providerId === 'password' ? 'Email/Password' :
+                               provider.providerId}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Verified</span>
+                          <div className="mt-1">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              selectedItem.emailVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {selectedItem.emailVerified ? 'Verified' : 'Unverified'}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</span>
+                          <div className="mt-1">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              selectedItem.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                            }`}>
+                              {selectedItem.disabled ? 'Disabled' : 'Active'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Created</span>
+                        <p className="text-sm text-gray-900 mt-1">
+                          {format(new Date(selectedItem.creationTime), 'MMM dd, yyyy \\at HH:mm')}
+                        </p>
+                      </div>
+                      {selectedItem.lastSignInTime && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</span>
+                          <p className="text-sm text-gray-900 mt-1">
+                            {format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col space-y-1">
+                            {user.providerData.map((provider, index) => (
+                              <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
+                                provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {provider.providerId === 'google.com' ? 'Google' :
+                                 provider.providerId === 'password' ? 'Email' :
+                                 provider.providerId}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col space-y-1">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              user.emailVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {user.emailVerified ? 'Verified' : 'Unverified'}
+                            </span>
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              user.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                            }`}>
+                              {user.disabled ? 'Disabled' : 'Active'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {format(new Date(user.creationTime), 'MMM dd, yyyy')}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {format(new Date(user.creationTime), 'HH:mm')}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {user.lastSignInTime ? (
+                            <div>
+                              <div className="text-sm text-gray-900">
+                                {format(new Date(user.lastSignInTime), 'MMM dd, yyyy')}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {format(new Date(user.lastSignInTime), 'HH:mm')}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-500">Never</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => openModal(user, 'auth')}
+                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                              title="View Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button 
+                              className={`p-1 rounded ${
+                                user.disabled 
+                                  ? 'text-green-600 hover:text-green-900 hover:bg-green-50' 
+                                  : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                              }`}
+                              title={user.disabled ? 'Enable User' : 'Disable User'}
+                            >
+                              {user.disabled ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -1035,6 +1396,7 @@ const AdminDashboard = () => {
                   {modalType === 'quote' && 'Quote Request Details'}
                   {modalType === 'demo' && 'Demo Booking Details'}
                   {modalType === 'package' && 'Package Order Details'}
+                  {modalType === 'auth' && 'User Details'}
                 </h3>
                 <button
                   onClick={closeModal}
@@ -1199,6 +1561,96 @@ const AdminDashboard = () => {
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Special Requirements</span>
                           <p className="text-sm text-gray-900 mt-1">{selectedItem.message}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {modalType === 'auth' && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">User Information</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</span>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-900 font-mono">{selectedItem.uid}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Display Name</span>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-900">{selectedItem.displayName || 'Not provided'}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-900">{selectedItem.email}</span>
+                        </div>
+                      </div>
+                      {selectedItem.phoneNumber && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</span>
+                          <div className="mt-1">
+                            <span className="text-sm text-gray-900">{selectedItem.phoneNumber}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Authentication Providers</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {selectedItem.providerData?.map((provider, index) => (
+                            <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
+                              provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {provider.providerId === 'google.com' ? 'Google' :
+                               provider.providerId === 'password' ? 'Email/Password' :
+                               provider.providerId}
+                            </span>
+                          )) || (
+                            <span className="text-sm text-gray-500">No providers found</span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Verified</span>
+                        <div className="mt-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            selectedItem.emailVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {selectedItem.emailVerified ? 'Verified' : 'Not Verified'}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</span>
+                        <div className="mt-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            selectedItem.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                          }`}>
+                            {selectedItem.disabled ? 'Disabled' : 'Active'}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Created</span>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-900">
+                            {selectedItem.creationTime ? format(new Date(selectedItem.creationTime), 'MMM dd, yyyy \\at HH:mm') : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                      {selectedItem.lastSignInTime && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</span>
+                          <div className="mt-1">
+                            <span className="text-sm text-gray-900">
+                              {format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm')}
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>
