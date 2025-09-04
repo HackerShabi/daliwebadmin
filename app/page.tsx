@@ -21,12 +21,18 @@ import {
   X,
   Shield,
   UserCheck,
-  UserX
+  UserX,
+  LogOut
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { AdminUser, Quote, DemoBooking, PackageOrder, DashboardStats, UserProviderData } from '../types';
+import AdminLogin from './login';
 
-const AdminDashboard = () => {
+interface AdminDashboardProps {
+  onLogout: () => void;
+}
+
+const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [demoBookings, setDemoBookings] = useState<DemoBooking[]>([]);
@@ -108,8 +114,8 @@ const AdminDashboard = () => {
       
       // Try to fetch real quotes
       try {
-        console.log('Fetching quotes from:', `${apiUrl}/api/quotes`);
-        const quotesResponse = await fetch(`${apiUrl}/api/quotes`);
+        console.log('Fetching quotes from:', `${apiUrl}/api/admin/quotes`);
+        const quotesResponse = await fetch(`${apiUrl}/api/admin/quotes`);
         console.log('Quotes response status:', quotesResponse.status);
         if (quotesResponse.ok) {
           const quotesData = await quotesResponse.json();
@@ -132,8 +138,8 @@ const AdminDashboard = () => {
 
       // Try to fetch real demo bookings
       try {
-        console.log('Fetching demos from:', `${apiUrl}/api/demos`);
-        const demosResponse = await fetch(`${apiUrl}/api/demos`);
+        console.log('Fetching demos from:', `${apiUrl}/api/admin/demos`);
+        const demosResponse = await fetch(`${apiUrl}/api/admin/demos`);
         console.log('Demos response status:', demosResponse.status);
         if (demosResponse.ok) {
           const demosData = await demosResponse.json();
@@ -156,8 +162,8 @@ const AdminDashboard = () => {
 
       // Try to fetch real package orders
       try {
-        console.log('Fetching packages from:', `${apiUrl}/api/packages/orders`);
-        const packagesResponse = await fetch(`${apiUrl}/api/packages/orders`);
+        console.log('Fetching packages from:', `${apiUrl}/api/admin/packages`);
+        const packagesResponse = await fetch(`${apiUrl}/api/admin/packages`);
         console.log('Packages response status:', packagesResponse.status);
         if (packagesResponse.ok) {
           const packagesData = await packagesResponse.json();
@@ -178,17 +184,17 @@ const AdminDashboard = () => {
         setPackageOrders([]);
       }
 
-      // Try to fetch users from backend auth API
+      // Try to fetch users from admin users API
       try {
-        console.log('Fetching users from backend auth API:', `${apiUrl}/api/auth`);
-        const authResponse = await fetch(`${apiUrl}/api/auth`);
-        console.log('Auth response status:', authResponse.status);
+        console.log('Fetching users from admin users API:', `${apiUrl}/api/admin/users`);
+        const authResponse = await fetch(`${apiUrl}/api/admin/users`);
+        console.log('Users response status:', authResponse.status);
         if (authResponse.ok) {
           const authData = await authResponse.json();
-          console.log('Auth data received:', authData);
-          if (authData.users) {
+          console.log('Users data received:', authData);
+          if (authData.success && authData.data) {
             // Transform the data to match AdminUser interface
-             const transformedUsers: AdminUser[] = authData.users.map((user: any) => ({
+             const transformedUsers: AdminUser[] = authData.data.map((user: any) => ({
                uid: user.uid,
                email: user.email,
                displayName: user.displayName || '',
@@ -237,15 +243,15 @@ const AdminDashboard = () => {
                }
              }));
           } else {
-            console.error('Auth API response missing users array', authData);
+            console.error('Users API response missing data array', authData);
             setUsers([]);
           }
         } else {
-          console.error('Auth API response not ok:', authResponse.status, authResponse.statusText);
+          console.error('Users API response not ok:', authResponse.status, authResponse.statusText);
           setUsers([]);
         }
       } catch (authError) {
-        console.error('Auth API error:', authError);
+        console.error('Users API error:', authError);
         setUsers([]);
       }
     } catch (error) {
@@ -404,13 +410,22 @@ const AdminDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">DaliWeb Admin Dashboard</h1>
               <p className="text-sm text-gray-600">Manage quotes and demo bookings</p>
             </div>
-            <button
-              onClick={fetchDashboardData}
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={fetchDashboardData}
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </button>
+              <button
+                onClick={onLogout}
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -1752,4 +1767,89 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+// Main App Component with Authentication
+const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check if user is already authenticated (from localStorage)
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const authStatus = localStorage.getItem('daliwebAdminAuth');
+        const authTime = localStorage.getItem('daliwebAdminAuthTime');
+        
+        if (authStatus === 'true' && authTime) {
+          const authTimestamp = parseInt(authTime);
+          const currentTime = Date.now();
+          const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
+          
+          if (currentTime - authTimestamp < sessionDuration) {
+            setIsAuthenticated(true);
+          } else {
+            // Session expired
+            localStorage.removeItem('daliwebAdminAuth');
+            localStorage.removeItem('daliwebAdminAuthTime');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+      }
+      setIsLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLogin = (password: string) => {
+    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'shoaib@255';
+    
+    if (password === adminPassword) {
+      setIsAuthenticated(true);
+      setAuthError('');
+      
+      // Store authentication status in localStorage
+      try {
+        localStorage.setItem('daliwebAdminAuth', 'true');
+        localStorage.setItem('daliwebAdminAuthTime', Date.now().toString());
+      } catch (error) {
+        console.error('Error storing auth status:', error);
+      }
+    } else {
+      setAuthError('Invalid password. Please try again.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setAuthError('');
+    
+    // Clear authentication status from localStorage
+    try {
+      localStorage.removeItem('daliwebAdminAuth');
+      localStorage.removeItem('daliwebAdminAuthTime');
+    } catch (error) {
+      console.error('Error clearing auth status:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <RefreshCw className="h-6 w-6 animate-spin text-indigo-600" />
+          <span className="text-lg font-medium text-gray-700">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AdminLogin onLogin={handleLogin} error={authError} />;
+  }
+
+  return <AdminDashboard onLogout={handleLogout} />;
+};
+
+export default App;
