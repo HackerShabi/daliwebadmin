@@ -178,10 +178,10 @@ const AdminDashboard = () => {
         setPackageOrders([]);
       }
 
-      // Try to fetch users from local auth API
+      // Try to fetch users from backend auth API
       try {
-        console.log('Fetching users from local auth API');
-        const authResponse = await fetch('/api/auth');
+        console.log('Fetching users from backend auth API:', `${apiUrl}/api/auth`);
+        const authResponse = await fetch(`${apiUrl}/api/auth`);
         console.log('Auth response status:', authResponse.status);
         if (authResponse.ok) {
           const authData = await authResponse.json();
@@ -351,6 +351,36 @@ const AdminDashboard = () => {
     setSelectedItem(null);
     setModalType(null);
     setShowModal(false);
+  };
+
+  const updateUserStatus = async (uid: string, disabled: boolean) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
+      const response = await fetch(`${apiUrl}/api/auth`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid,
+          disabled: !disabled // Toggle the current status
+        })
+      });
+
+      if (response.ok) {
+        // Update the local state
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.uid === uid ? { ...user, disabled: !disabled } : user
+          )
+        );
+        console.log(`User ${uid} ${disabled ? 'enabled' : 'disabled'} successfully`);
+      } else {
+        console.error('Failed to update user status:', response.status);
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
   };
 
   if (loading) {
@@ -894,6 +924,7 @@ const AdminDashboard = () => {
                               <Eye className="h-4 w-4" />
                             </button>
                             <button 
+                              onClick={() => updateUserStatus(user.uid, user.disabled)}
                               className={`p-1 rounded ${
                                 user.disabled 
                                   ? 'text-green-600 hover:text-green-900 hover:bg-green-50' 
