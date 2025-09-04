@@ -683,7 +683,7 @@ const AdminDashboard = () => {
                             <div className="text-sm text-gray-500">{user.phoneNumber}</div>
                           )}
 
-                {modalType === 'auth' && (
+                {modalType === 'auth' && selectedItem && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">User Information</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
@@ -708,7 +708,7 @@ const AdminDashboard = () => {
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Authentication Providers</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {(selectedItem as AdminUser).providerData.map((provider: UserProviderData, index: number) => (
+                          {(selectedItem as AdminUser).providerData?.map((provider: UserProviderData, index: number) => (
                             <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
                               provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
@@ -1299,30 +1299,32 @@ const AdminDashboard = () => {
               
               <div className="p-6 space-y-6">
                 {/* Contact Information */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Contact Information</h4>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-900">{selectedItem.name}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-600">{selectedItem.email}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-600">{selectedItem.phone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Building className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-600 capitalize">{selectedItem.businessType}</span>
+                {selectedItem && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">Contact Information</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="text-sm font-medium text-gray-900">{selectedItem.name}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="text-sm text-gray-600">{selectedItem.email}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="text-sm text-gray-600">{selectedItem.phone}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Building className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="text-sm text-gray-600 capitalize">{selectedItem.businessType}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Request Specific Information */}
-                {modalType === 'quote' && (
+                {modalType === 'quote' && selectedItem && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Quote Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
@@ -1356,7 +1358,7 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {modalType === 'demo' && (
+                {modalType === 'demo' && selectedItem && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Demo Booking Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
@@ -1409,7 +1411,7 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {modalType === 'package' && (
+                {modalType === 'package' && selectedItem && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Package Order Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
