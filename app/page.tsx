@@ -211,6 +211,7 @@ const AdminDashboard = () => {
           quotes: { total: 0, pending: 0, inProgress: 0, completed: 0, today: 0, thisWeek: 0, thisMonth: 0 },
           demos: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
           packages: { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0, paymentPending: 0, paymentCompleted: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+          auth: { totalUsers: 0, emailUsers: 0, googleUsers: 0, verifiedUsers: 0, activeUsers: 0, today: 0, thisWeek: 0, thisMonth: 0 },
           revenue: { totalRevenue: 0, averageBookingValue: 0, packageRevenue: 0 }
         });
       }
