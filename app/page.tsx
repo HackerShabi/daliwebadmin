@@ -24,119 +24,14 @@ import {
   UserX
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { UserInfo } from 'firebase/auth';
-
-interface Quote {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  businessType: string;
-  message: string;
-  source: string;
-  status: string;
-  priority: string;
-  createdAt: string;
-}
-
-interface DemoBooking {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  businessType: string;
-  preferredDate: string;
-  preferredTime: string;
-  message?: string;
-  paymentStatus: string;
-  paymentAmount: number;
-  bookingStatus: string;
-  createdAt: string;
-}
-
-interface PackageOrder {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  businessType: string;
-  packageType: string;
-  packagePrice: number;
-  paymentStatus: string;
-  orderStatus: string;
-  message?: string;
-  createdAt: string;
-}
-
-interface FirebaseUser {
-  uid: string;
-  email: string;
-  displayName?: string;
-  phoneNumber?: string;
-  emailVerified: boolean;
-  disabled: boolean;
-  creationTime: string;
-  lastSignInTime?: string;
-  providerData: UserInfo[];
-}
-
-interface DashboardStats {
-  quotes: {
-    total: number;
-    pending: number;
-    inProgress: number;
-    completed: number;
-    today: number;
-    thisWeek: number;
-    thisMonth: number;
-  };
-  demos: {
-    total: number;
-    pending: number;
-    confirmed: number;
-    completed: number;
-    cancelled: number;
-    paymentPending: number;
-    paymentCompleted: number;
-    today: number;
-    thisWeek: number;
-    thisMonth: number;
-  };
-  packages: {
-    total: number;
-    pending: number;
-    processing: number;
-    completed: number;
-    cancelled: number;
-    paymentPending: number;
-    paymentCompleted: number;
-    today: number;
-    thisWeek: number;
-    thisMonth: number;
-  };
-  auth: {
-    totalUsers: number;
-    emailUsers: number;
-    googleUsers: number;
-    verifiedUsers: number;
-    activeUsers: number;
-    today: number;
-    thisWeek: number;
-    thisMonth: number;
-  };
-  revenue: {
-    totalRevenue: number;
-    averageBookingValue: number;
-    packageRevenue: number;
-  };
-}
+import { AdminUser, Quote, DemoBooking, PackageOrder, DashboardStats } from '../types';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [demoBookings, setDemoBookings] = useState<DemoBooking[]>([]);
   const [packageOrders, setPackageOrders] = useState<PackageOrder[]>([]);
-  const [firebaseUsers, setFirebaseUsers] = useState<FirebaseUser[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -283,28 +178,28 @@ const AdminDashboard = () => {
         setPackageOrders([]);
       }
 
-      // Try to fetch Firebase users
-      try {
-        console.log('Fetching Firebase users from:', `${apiUrl}/api/auth/users`);
+      // Try to fetch users from MongoDB
+        try {
+          console.log('Fetching users from:', `${apiUrl}/api/auth/users`);
         const authResponse = await fetch(`${apiUrl}/api/auth/users`);
         console.log('Auth response status:', authResponse.status);
         if (authResponse.ok) {
           const authData = await authResponse.json();
           console.log('Auth data received:', authData);
           if (authData.success) {
-            setFirebaseUsers(authData.data || []);
-            console.log('Firebase users set:', authData.data?.length || 0, 'users');
+            setUsers(authData.data || []);
+            console.log('Users set:', authData.data?.length || 0, 'users');
           } else {
             console.error('Auth API returned success: false', authData);
-            setFirebaseUsers([]);
+            setUsers([]);
           }
         } else {
           console.error('Auth API response not ok:', authResponse.status, authResponse.statusText);
-          setFirebaseUsers([]);
+          setUsers([]);
         }
       } catch (authError) {
         console.error('Auth API error:', authError);
-        setFirebaseUsers([]);
+        setUsers([]);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -319,7 +214,7 @@ const AdminDashboard = () => {
         setQuotes([]);
         setDemoBookings([]);
         setPackageOrders([]);
-        setFirebaseUsers([]);
+        setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -730,10 +625,10 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Firebase Users Table */}
+            {/* Users Table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Firebase Users ({firebaseUsers.length})</h3>
+                <h3 className="text-lg font-medium text-gray-900">Users ({users.length})</h3>
               </div>
               <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -763,7 +658,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {firebaseUsers.map((user) => (
+                    {users.map((user) => (
                       <tr key={user.uid} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
