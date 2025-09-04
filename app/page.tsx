@@ -24,6 +24,7 @@ import {
   UserX
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { UserInfo } from 'firebase/auth';
 
 interface Quote {
   _id: string;
@@ -76,13 +77,7 @@ interface FirebaseUser {
   disabled: boolean;
   creationTime: string;
   lastSignInTime?: string;
-  providerData: Array<{
-    providerId: string;
-    uid: string;
-    displayName?: string;
-    email?: string;
-    phoneNumber?: string;
-  }>;
+  providerData: UserInfo[];
 }
 
 interface DashboardStats {
