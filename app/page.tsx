@@ -24,7 +24,7 @@ import {
   UserX
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { AdminUser, Quote, DemoBooking, PackageOrder, DashboardStats } from '../types';
+import { AdminUser, Quote, DemoBooking, PackageOrder, DashboardStats, UserProviderData } from '../types';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<AdminUser | Quote | DemoBooking | PackageOrder | null>(null);
   const [modalType, setModalType] = useState<'quote' | 'demo' | 'package' | 'auth' | null>(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -708,7 +708,7 @@ const AdminDashboard = () => {
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Authentication Providers</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {selectedItem.providerData.map((provider, index) => (
+                          {(selectedItem as AdminUser).providerData.map((provider: UserProviderData, index: number) => (
                             <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
                               provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
@@ -1491,7 +1491,7 @@ const AdminDashboard = () => {
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Authentication Providers</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {selectedItem.providerData?.map((provider, index) => (
+                          {(selectedItem as AdminUser).providerData?.map((provider: UserProviderData, index: number) => (
                             <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
                               provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
