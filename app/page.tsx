@@ -490,12 +490,12 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Total Quotes</p>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.quotes.total}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats?.quotes?.total ?? 0}</p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center text-sm text-gray-600">
-                    <span className="text-green-600 font-medium">+{stats.quotes.today}</span>
+                    <span className="text-green-600 font-medium">+{stats?.quotes?.today ?? 0}</span>
                     <span className="ml-1">today</span>
                   </div>
                 </div>
@@ -511,12 +511,12 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Demo Bookings</p>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.demos.total}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats?.demos?.total ?? 0}</p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center text-sm text-gray-600">
-                    <span className="text-green-600 font-medium">+{stats.demos.today}</span>
+                    <span className="text-green-600 font-medium">+{stats?.demos?.today ?? 0}</span>
                     <span className="ml-1">today</span>
                   </div>
                 </div>
@@ -532,12 +532,12 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Package Orders</p>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.packages.total}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats?.packages?.total ?? 0}</p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center text-sm text-gray-600">
-                    <span className="text-green-600 font-medium">+{stats.packages.today}</span>
+                    <span className="text-green-600 font-medium">+{stats?.packages?.today ?? 0}</span>
                     <span className="ml-1">today</span>
                   </div>
                 </div>
@@ -553,12 +553,12 @@ const AdminDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Total Users</p>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.auth.totalUsers}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats?.auth?.totalUsers ?? 0}</p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center text-sm text-gray-600">
-                    <span className="text-green-600 font-medium">+{stats.auth.today}</span>
+                    <span className="text-green-600 font-medium">+{stats?.auth?.today ?? 0}</span>
                     <span className="ml-1">today</span>
                   </div>
                 </div>
@@ -572,14 +572,14 @@ const AdminDashboard = () => {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Total Revenue</p>
                     <p className="text-2xl font-semibold text-gray-900">
-                      ${(stats.revenue?.totalRevenue || 0).toLocaleString()}
+                      ${(stats?.revenue?.totalRevenue || 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <span className="text-blue-600 font-medium">
-                      ${(stats.revenue?.averageBookingValue || 0).toFixed(0)}
+                      ${(stats?.revenue?.averageBookingValue || 0).toFixed(0)}
                     </span>
                     <span className="ml-1">avg booking</span>
                   </div>
@@ -594,7 +594,7 @@ const AdminDashboard = () => {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Conversion Rate</p>
                     <p className="text-2xl font-semibold text-gray-900">
-                      {stats.quotes.total > 0 ? ((stats.demos.total / stats.quotes.total) * 100).toFixed(1) : 0}%
+                      {(stats?.quotes?.total ?? 0) > 0 ? (((stats?.demos?.total ?? 0) / (stats?.quotes?.total ?? 1)) * 100).toFixed(1) : 0}%
                     </p>
                   </div>
                 </div>
@@ -686,8 +686,8 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.auth.totalUsers}</p>
-                    <p className="text-sm text-gray-500">+{stats.auth.today} today</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.auth?.totalUsers ?? 0}</p>
+                    <p className="text-sm text-gray-500">+{stats?.auth?.today ?? 0} today</p>
                   </div>
                   <div className="p-3 bg-blue-100 rounded-full">
                     <Users className="h-6 w-6 text-blue-600" />
@@ -699,7 +699,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Email Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.auth.emailUsers}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.auth?.emailUsers ?? 0}</p>
                     <p className="text-sm text-gray-500">Email/Password</p>
                   </div>
                   <div className="p-3 bg-green-100 rounded-full">
@@ -712,7 +712,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Google Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.auth.googleUsers}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.auth?.googleUsers ?? 0}</p>
                     <p className="text-sm text-gray-500">OAuth Sign-in</p>
                   </div>
                   <div className="p-3 bg-red-100 rounded-full">
@@ -725,7 +725,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Verified Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.auth.verifiedUsers}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.auth?.verifiedUsers ?? 0}</p>
                     <p className="text-sm text-gray-500">Email Verified</p>
                   </div>
                   <div className="p-3 bg-purple-100 rounded-full">
