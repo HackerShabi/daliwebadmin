@@ -294,7 +294,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const openModal = (item: any, type: 'quote' | 'demo' | 'package') => {
+  const openModal = (item: any, type: 'quote' | 'demo' | 'package' | 'auth') => {
     setSelectedItem(item);
     setModalType(type);
     setShowModal(true);
@@ -683,23 +683,29 @@ const AdminDashboard = () => {
                             <div className="text-sm text-gray-500">{user.phoneNumber}</div>
                           )}
 
-                {modalType === 'auth' && selectedItem && (
+                {modalType === 'auth' && selectedItem && 'uid' in selectedItem && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">User Information</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      {'uid' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</span>
                         <p className="text-sm text-gray-900 mt-1 font-mono">{selectedItem.uid}</p>
                       </div>
+                      )}
+                      {'displayName' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Display Name</span>
                         <p className="text-sm text-gray-900 mt-1">{selectedItem.displayName || 'Not provided'}</p>
                       </div>
+                      )}
+                      {'email' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span>
                         <p className="text-sm text-gray-900 mt-1">{selectedItem.email}</p>
                       </div>
-                      {selectedItem.phoneNumber && (
+                      )}
+                      {'phoneNumber' in selectedItem && selectedItem.phoneNumber && (
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</span>
                           <p className="text-sm text-gray-900 mt-1">{selectedItem.phoneNumber}</p>
@@ -708,7 +714,7 @@ const AdminDashboard = () => {
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Authentication Providers</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {(selectedItem as AdminUser).providerData?.map((provider: UserProviderData, index: number) => (
+                          {selectedItem.providerData?.map((provider: UserProviderData, index: number) => (
                             <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
                               provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
@@ -721,35 +727,39 @@ const AdminDashboard = () => {
                           ))}
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Verified</span>
-                          <div className="mt-1">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              selectedItem.emailVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {selectedItem.emailVerified ? 'Verified' : 'Unverified'}
-                            </span>
+                      {'emailVerified' in selectedItem && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Verified</span>
+                            <div className="mt-1">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                selectedItem.emailVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {selectedItem.emailVerified ? 'Verified' : 'Unverified'}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</span>
+                            <div className="mt-1">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                selectedItem.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                              }`}>
+                                {selectedItem.disabled ? 'Disabled' : 'Active'}
+                              </span>
+                            </div>
                           </div>
                         </div>
+                      )}
+                      {'creationTime' in selectedItem && (
                         <div>
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</span>
-                          <div className="mt-1">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              selectedItem.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                            }`}>
-                              {selectedItem.disabled ? 'Disabled' : 'Active'}
-                            </span>
-                          </div>
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Created</span>
+                          <p className="text-sm text-gray-900 mt-1">
+                            {format(new Date(selectedItem.creationTime), 'MMM dd, yyyy \\at HH:mm')}
+                          </p>
                         </div>
-                      </div>
-                      <div>
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Created</span>
-                        <p className="text-sm text-gray-900 mt-1">
-                          {format(new Date(selectedItem.creationTime), 'MMM dd, yyyy \\at HH:mm')}
-                        </p>
-                      </div>
-                      {selectedItem.lastSignInTime && (
+                      )}
+                      {'lastSignInTime' in selectedItem && selectedItem.lastSignInTime && (
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</span>
                           <p className="text-sm text-gray-900 mt-1">
@@ -1303,22 +1313,30 @@ const AdminDashboard = () => {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Contact Information</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                      {'name' in selectedItem && (
                       <div className="flex items-center">
                         <Users className="h-4 w-4 text-gray-400 mr-2" />
                         <span className="text-sm font-medium text-gray-900">{selectedItem.name}</span>
                       </div>
+                      )}
+                      {'email' in selectedItem && (
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 text-gray-400 mr-2" />
                         <span className="text-sm text-gray-600">{selectedItem.email}</span>
                       </div>
+                      )}
+                      {'phone' in selectedItem && (
                       <div className="flex items-center">
                         <Phone className="h-4 w-4 text-gray-400 mr-2" />
                         <span className="text-sm text-gray-600">{selectedItem.phone}</span>
                       </div>
+                      )}
+                      {'businessType' in selectedItem && (
                       <div className="flex items-center">
                         <Building className="h-4 w-4 text-gray-400 mr-2" />
                         <span className="text-sm text-gray-600 capitalize">{selectedItem.businessType}</span>
                       </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1328,6 +1346,7 @@ const AdminDashboard = () => {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Quote Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      {'status' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span>
                         <div className="mt-1">
@@ -1336,6 +1355,8 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
+                      )}
+                      {'priority' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</span>
                         <div className="mt-1">
@@ -1344,11 +1365,14 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
+                      )}
+                      {'source' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Source</span>
                         <p className="text-sm text-gray-900 mt-1 capitalize">{selectedItem.source}</p>
                       </div>
-                      {selectedItem.message && (
+                      )}
+                      {'message' in selectedItem && selectedItem.message && (
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Message</span>
                           <p className="text-sm text-gray-900 mt-1">{selectedItem.message}</p>
@@ -1362,28 +1386,38 @@ const AdminDashboard = () => {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Demo Booking Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      {('preferredDate' in selectedItem || 'preferredTime' in selectedItem) && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Preferred Date & Time</span>
                         <div className="mt-1 flex items-center space-x-4">
+                          {'preferredDate' in selectedItem && (
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 text-gray-400 mr-1" />
                             <span className="text-sm text-gray-900">
                               {selectedItem.preferredDate ? format(new Date(selectedItem.preferredDate), 'MMM dd, yyyy') : 'N/A'}
                             </span>
                           </div>
+                          )}
+                          {'preferredTime' in selectedItem && selectedItem.preferredTime ? (
                           <div className="flex items-center">
                             <Clock className="h-4 w-4 text-gray-400 mr-1" />
-                            <span className="text-sm text-gray-900">{selectedItem.preferredTime || 'N/A'}</span>
+                            <span className="text-sm text-gray-900">{(selectedItem as DemoBooking).preferredTime}</span>
                           </div>
+                          ) : null}
                         </div>
                       </div>
+                      )}
+                      {('paymentAmount' in selectedItem || 'paymentStatus' in selectedItem) && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Information</span>
                         <div className="mt-1 flex items-center space-x-4">
+                          {'paymentAmount' in selectedItem && (
                           <div className="flex items-center">
                             <DollarSign className="h-4 w-4 text-gray-400 mr-1" />
                             <span className="text-sm font-medium text-gray-900">${(selectedItem.paymentAmount || 0).toLocaleString()}</span>
                           </div>
+                          )}
+                          {'paymentStatus' in selectedItem && (
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             selectedItem.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
                             selectedItem.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -1391,8 +1425,11 @@ const AdminDashboard = () => {
                           }`}>
                             {selectedItem.paymentStatus}
                           </span>
+                          )}
                         </div>
                       </div>
+                      )}
+                      {'bookingStatus' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Status</span>
                         <div className="mt-1">
@@ -1401,7 +1438,8 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
-                      {selectedItem.message && (
+                      )}
+                      {'message' in selectedItem && selectedItem.message && (
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Additional Notes</span>
                           <p className="text-sm text-gray-900 mt-1">{selectedItem.message}</p>
@@ -1415,21 +1453,30 @@ const AdminDashboard = () => {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Package Order Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      {('packageType' in selectedItem || 'packagePrice' in selectedItem) && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Package Information</span>
                         <div className="mt-1 space-y-1">
+                          {('packageType' in selectedItem && 'packagePrice' in selectedItem) && (
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-900">{getPackagePlanName(selectedItem.packageType, selectedItem.packagePrice)}</span>
                             <span className="text-lg font-bold text-gray-900">${selectedItem.packagePrice}</span>
                           </div>
+                          )}
+                          {'packageType' in selectedItem && (
                           <div className="text-xs text-gray-500">{selectedItem.packageType}</div>
+                          )}
+                          {'packagePrice' in selectedItem && (
                           <div className="text-xs text-gray-500">
                             {selectedItem.packagePrice === 99 && 'Starter Plan - Basic website package'}
                             {selectedItem.packagePrice === 499 && 'Business Plan - Professional website with advanced features'}
                             {selectedItem.packagePrice === 999 && 'Premium Plan - Enterprise-level website solution'}
                           </div>
+                          )}
                         </div>
                       </div>
+                      )}
+                      {'paymentStatus' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</span>
                         <div className="mt-1">
@@ -1442,6 +1489,8 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
+                      )}
+                      {'orderStatus' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Order Status</span>
                         <div className="mt-1">
@@ -1450,7 +1499,8 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
-                      {selectedItem.message && (
+                      )}
+                      {'message' in selectedItem && selectedItem.message && (
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Special Requirements</span>
                           <p className="text-sm text-gray-900 mt-1">{selectedItem.message}</p>
@@ -1460,7 +1510,7 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {modalType === 'auth' && (
+                {modalType === 'auth' && 'uid' in selectedItem && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">User Information</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
@@ -1476,24 +1526,27 @@ const AdminDashboard = () => {
                           <span className="text-sm text-gray-900">{selectedItem.displayName || 'Not provided'}</span>
                         </div>
                       </div>
+                      {'email' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span>
                         <div className="mt-1">
                           <span className="text-sm text-gray-900">{selectedItem.email}</span>
                         </div>
                       </div>
-                      {selectedItem.phoneNumber && (
-                        <div>
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</span>
-                          <div className="mt-1">
-                            <span className="text-sm text-gray-900">{selectedItem.phoneNumber}</span>
-                          </div>
-                        </div>
                       )}
+                      {'phoneNumber' in selectedItem && selectedItem.phoneNumber && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</span>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-900">{selectedItem.phoneNumber}</span>
+                        </div>
+                      </div>
+                      )}
+                      {'providerData' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Authentication Providers</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {(selectedItem as AdminUser).providerData?.map((provider: UserProviderData, index: number) => (
+                          {selectedItem.providerData?.map((provider: UserProviderData, index: number) => (
                             <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' :
                               provider.providerId === 'password' ? 'bg-blue-100 text-blue-800' :
@@ -1508,6 +1561,8 @@ const AdminDashboard = () => {
                           )}
                         </div>
                       </div>
+                      )}
+                      {'emailVerified' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Verified</span>
                         <div className="mt-1">
@@ -1518,6 +1573,8 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
+                      )}
+                      {'disabled' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</span>
                         <div className="mt-1">
@@ -1528,6 +1585,8 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
+                      )}
+                      {'creationTime' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Created</span>
                         <div className="mt-1">
@@ -1536,15 +1595,16 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
-                      {selectedItem.lastSignInTime && (
-                        <div>
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</span>
-                          <div className="mt-1">
-                            <span className="text-sm text-gray-900">
-                              {format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm')}
-                            </span>
-                          </div>
+                      )}
+                      {'lastSignInTime' in selectedItem && selectedItem.lastSignInTime && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</span>
+                        <div className="mt-1">
+                          <span className="text-sm text-gray-900">
+                            {format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm')}
+                          </span>
                         </div>
+                      </div>
                       )}
                     </div>
                   </div>
@@ -1556,12 +1616,14 @@ const AdminDashboard = () => {
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                      {'createdAt' in selectedItem && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Created</span>
                         <div className="text-sm text-gray-900">
                           {selectedItem.createdAt ? format(new Date(selectedItem.createdAt), 'MMM dd, yyyy \\at HH:mm') : 'N/A'}
                         </div>
                       </div>
+                      )}
                     </div>
                   </div>
                 </div>
