@@ -401,61 +401,87 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Vertical Sidebar */}
+      <div className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-xl font-bold text-gray-900">DaliWeb Admin</h1>
+          <p className="text-sm text-gray-600 mt-1">Dashboard</p>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {[
+            { id: 'overview', name: 'Overview', icon: TrendingUp },
+            { id: 'quotes', name: 'Quote Requests', icon: Users },
+            { id: 'demos', name: 'Demo Bookings', icon: Calendar },
+            { id: 'packages', name: 'Package Orders', icon: Package },
+            { id: 'auth', name: 'Authentication', icon: Shield },
+            { id: 'users', name: 'User Info', icon: UserCheck }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center px-4 py-3 text-left rounded-lg font-medium text-sm transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <tab.icon className="h-5 w-5 mr-3" />
+              {tab.name}
+            </button>
+          ))}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-gray-200 space-y-2">
+          <button
+            onClick={fetchDashboardData}
+            className="w-full flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh Data
+          </button>
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+          <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">DaliWeb Admin Dashboard</h1>
-              <p className="text-sm text-gray-600">Manage quotes and demo bookings</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={fetchDashboardData}
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </button>
-              <button
-                onClick={onLogout}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </button>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {activeTab === 'overview' && 'Dashboard Overview'}
+                {activeTab === 'quotes' && 'Quote Requests'}
+                {activeTab === 'demos' && 'Demo Bookings'}
+                {activeTab === 'packages' && 'Package Orders'}
+                {activeTab === 'auth' && 'Authentication'}
+                {activeTab === 'users' && 'User Information'}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {activeTab === 'overview' && 'Monitor your business metrics and performance'}
+                {activeTab === 'quotes' && 'Manage incoming quote requests'}
+                {activeTab === 'demos' && 'Handle demo booking appointments'}
+                {activeTab === 'packages' && 'Track package orders and payments'}
+                {activeTab === 'auth' && 'Monitor user authentication and registrations'}
+                {activeTab === 'users' && 'View user profiles and activity'}
+              </p>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: 'overview', name: 'Overview', icon: TrendingUp },
-              { id: 'quotes', name: 'Quote Requests', icon: Users },
-              { id: 'demos', name: 'Demo Bookings', icon: Calendar },
-              { id: 'packages', name: 'Package Orders', icon: Package },
-              { id: 'auth', name: 'Authentication', icon: Shield }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <tab.icon className="h-4 w-4 mr-2" />
-                {tab.name}
-              </button>
-            ))}
-          </nav>
-        </div>
+        {/* Content Area */}
+        <div className="flex-1 p-6 overflow-auto">
 
         {/* Overview Tab */}
         {activeTab === 'overview' && stats && (
@@ -1242,6 +1268,143 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
           </div>
         )}
 
+        {/* User Info Tab */}
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            {/* User Search and Filters */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search users by name, email..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                    />
+                  </div>
+                </div>
+                <div className="sm:w-48">
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="all">All Users</option>
+                    <option value="verified">Verified</option>
+                    <option value="unverified">Unverified</option>
+                    <option value="google">Google Users</option>
+                    <option value="email">Email Users</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Users List */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">User Profiles ({users.length})</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users
+                      .filter(user => {
+                        const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            user.displayName?.toLowerCase().includes(searchTerm.toLowerCase());
+                        
+                        if (filterStatus === 'all') return matchesSearch;
+                        if (filterStatus === 'verified') return matchesSearch && user.emailVerified;
+                        if (filterStatus === 'unverified') return matchesSearch && !user.emailVerified;
+                        if (filterStatus === 'google') return matchesSearch && user.providerData?.some(p => p.providerId === 'google.com');
+                        if (filterStatus === 'email') return matchesSearch && user.providerData?.some(p => p.providerId === 'password');
+                        return matchesSearch;
+                      })
+                      .map((user) => (
+                        <tr key={user.uid} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                  <span className="text-sm font-medium text-indigo-700">
+                                    {user.displayName?.[0] || user.email?.[0] || 'U'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.displayName || 'No Name'}
+                                </div>
+                                <div className="text-sm text-gray-500">{user.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col space-y-1">
+                              {user.providerData?.map((provider, index) => (
+                                <span key={index} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  provider.providerId === 'google.com' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {provider.providerId === 'google.com' ? 'Google' : 'Email'}
+                                </span>
+                              )) || <span className="text-gray-400">Unknown</span>}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                              Not Available
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {user.lastSignInTime ? 'Active' : 'Inactive'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {user.lastSignInTime ? format(new Date(user.lastSignInTime), 'MMM dd, yyyy') : 'Never signed in'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.creationTime ? format(new Date(user.creationTime), 'MMM dd, yyyy') : 'Unknown'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedItem(user);
+                                  setModalType('auth');
+                                  setShowModal(true);
+                                }}
+                                className="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50"
+                                title="View Profile"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              <button className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50" title="Edit">
+                                <Edit className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Package Orders Tab */}
         {activeTab === 'packages' && (
           <div className="space-y-6">
@@ -1762,6 +1925,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
