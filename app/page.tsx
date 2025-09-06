@@ -50,8 +50,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     try {
       setLoading(true);
       
-      // Define API URL for all requests
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
+      // Define API URL for all requests - use local Next.js API routes
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       
       // Fetch real dashboard statistics
       try {
@@ -136,19 +136,19 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         setQuotes([]);
       }
 
-      // Try to fetch real demo bookings
+      // Try to fetch real demo bookings from local API
       try {
-        console.log('Fetching demos from:', `${apiUrl}/api/admin/demos`);
-        const demosResponse = await fetch(`${apiUrl}/api/admin/demos`);
+        console.log('Fetching demos from:', `${apiUrl}/api/demo`);
+        const demosResponse = await fetch(`${apiUrl}/api/demo`);
         console.log('Demos response status:', demosResponse.status);
         if (demosResponse.ok) {
           const demosData = await demosResponse.json();
           console.log('Demos data received:', demosData);
-          if (demosData.success) {
-            setDemoBookings(demosData.data || []);
-            console.log('Demo bookings set:', demosData.data?.length || 0, 'items');
+          if (demosData.bookings) {
+            setDemoBookings(demosData.bookings || []);
+            console.log('Demo bookings set:', demosData.bookings?.length || 0, 'items');
           } else {
-            console.error('Demos API returned success: false', demosData);
+            console.error('Demos API returned no bookings', demosData);
             setDemoBookings([]);
           }
         } else {
@@ -160,19 +160,19 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         setDemoBookings([]);
       }
 
-      // Try to fetch real package orders
+      // Try to fetch real package orders from local API
       try {
-        console.log('Fetching packages from:', `${apiUrl}/api/admin/packages`);
-        const packagesResponse = await fetch(`${apiUrl}/api/admin/packages`);
+        console.log('Fetching packages from:', `${apiUrl}/api/packages`);
+        const packagesResponse = await fetch(`${apiUrl}/api/packages`);
         console.log('Packages response status:', packagesResponse.status);
         if (packagesResponse.ok) {
           const packagesData = await packagesResponse.json();
           console.log('Packages data received:', packagesData);
-          if (packagesData.success) {
-            setPackageOrders(packagesData.data || []);
-            console.log('Package orders set:', packagesData.data?.length || 0, 'items');
+          if (packagesData.orders) {
+            setPackageOrders(packagesData.orders || []);
+            console.log('Package orders set:', packagesData.orders?.length || 0, 'items');
           } else {
-            console.error('Packages API returned success: false', packagesData);
+            console.error('Packages API returned no orders', packagesData);
             setPackageOrders([]);
           }
         } else {
