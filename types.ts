@@ -43,6 +43,7 @@ export interface DemoBooking {
   preferredDate: string;
   preferredTime: string;
   message?: string;
+  selectedCategory?: string;
   paymentStatus: string;
   paymentAmount: number;
   bookingStatus: string;
@@ -55,6 +56,7 @@ export interface PackageOrder {
   email: string;
   phone: string;
   businessType: string;
+  selectedCategory?: string;
   packageType: string;
   packagePrice: number;
   paymentStatus: string;

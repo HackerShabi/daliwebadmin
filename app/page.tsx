@@ -1170,6 +1170,9 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         Business Type
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Preferred Date/Time
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1207,6 +1210,20 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                             <Building className="h-4 w-4 text-gray-400 mr-2" />
                             <span className="text-sm text-gray-900 capitalize">{demo.businessType}</span>
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            demo.selectedCategory === 'business' ? 'bg-blue-100 text-blue-800' :
+                            demo.selectedCategory === 'industry' ? 'bg-green-100 text-green-800' :
+                            demo.selectedCategory === 'ecommerce' ? 'bg-purple-100 text-purple-800' :
+                            demo.selectedCategory === 'creative' ? 'bg-pink-100 text-pink-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {demo.selectedCategory ? 
+                              demo.selectedCategory.charAt(0).toUpperCase() + demo.selectedCategory.slice(1) : 
+                              'Not Selected'
+                            }
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
@@ -1455,6 +1472,9 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         Business Type
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Package
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1495,6 +1515,20 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                             <Building className="h-4 w-4 text-gray-400 mr-2" />
                             <span className="text-sm text-gray-900">{pkg.businessType}</span>
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            pkg.selectedCategory === 'business' ? 'bg-blue-100 text-blue-800' :
+                            pkg.selectedCategory === 'industry' ? 'bg-green-100 text-green-800' :
+                            pkg.selectedCategory === 'ecommerce' ? 'bg-purple-100 text-purple-800' :
+                            pkg.selectedCategory === 'creative' ? 'bg-pink-100 text-pink-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {pkg.selectedCategory ? 
+                              pkg.selectedCategory.charAt(0).toUpperCase() + pkg.selectedCategory.slice(1) : 
+                              'Not Selected'
+                            }
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{getPackagePlanName(pkg.packageType, pkg.packagePrice)}</div>
