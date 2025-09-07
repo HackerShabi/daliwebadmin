@@ -50,8 +50,9 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     try {
       setLoading(true);
       
-      // Define API URL for all requests - use backend API
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
+      // For admin API calls, use relative URLs (local to this Next.js app)
+      // Only non-admin API calls will be rewritten to backend by next.config.js
+      const apiUrl = '';
       
       // Fetch real dashboard statistics
       try {
@@ -361,8 +362,9 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
   const updateUserStatus = async (uid: string, disabled: boolean) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
-      const response = await fetch(`${apiUrl}/api/auth`, {
+      // Auth endpoint should go to backend server (not admin panel)
+      const backendUrl = 'https://daliwebagencybackend.onrender.com';
+      const response = await fetch(`${backendUrl}/api/auth`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
