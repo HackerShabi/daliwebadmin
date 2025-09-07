@@ -146,8 +146,14 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
           const demosData = await demosResponse.json();
           console.log('Demos data received:', demosData);
           if (demosData.success) {
-            setDemoBookings(demosData.data || []);
-            console.log('Demo bookings set:', demosData.data?.length || 0, 'items');
+            // Handle both old and new API response formats
+            let demosArray = demosData.data || [];
+            if (!Array.isArray(demosData.data)) {
+              // Old format: data is an object with demos array
+              demosArray = demosData.data?.demos || [];
+            }
+            setDemoBookings(demosArray);
+            console.log('Demo bookings set:', demosArray.length, 'items');
           } else {
             console.error('Demos API returned success: false', demosData);
             setDemoBookings([]);
@@ -170,8 +176,14 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
           const packagesData = await packagesResponse.json();
           console.log('Packages data received:', packagesData);
           if (packagesData.success) {
-            setPackageOrders(packagesData.data || []);
-            console.log('Package orders set:', packagesData.data?.length || 0, 'items');
+            // Handle both old and new API response formats
+            let packagesArray = packagesData.data || [];
+            if (!Array.isArray(packagesData.data)) {
+              // Old format: data is an object with packages array
+              packagesArray = packagesData.data?.packages || [];
+            }
+            setPackageOrders(packagesArray);
+            console.log('Package orders set:', packagesArray.length, 'items');
           } else {
             console.error('Packages API returned success: false', packagesData);
             setPackageOrders([]);
@@ -194,8 +206,15 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
           const authData = await authResponse.json();
           console.log('Users data received:', authData);
           if (authData.success && authData.data) {
+            // Handle both old and new API response formats
+            let usersArray = authData.data;
+            if (!Array.isArray(authData.data)) {
+              // Old format: data is an object with users array
+              usersArray = authData.data.users || [];
+            }
+            
             // Transform the data to match AdminUser interface
-             const transformedUsers: AdminUser[] = authData.data.map((user: any) => ({
+             const transformedUsers: AdminUser[] = usersArray.map((user: any) => ({
                uid: user.uid,
                email: user.email,
                displayName: user.displayName || '',
@@ -278,21 +297,21 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     fetchDashboardData();
   }, []);
 
-  const filteredQuotes = quotes.filter(quote => {
+  const filteredQuotes = (quotes || []).filter(quote => {
     const matchesSearch = quote.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          quote.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || quote.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
-  const filteredDemos = demoBookings.filter(demo => {
+  const filteredDemos = (demoBookings || []).filter(demo => {
     const matchesSearch = demo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          demo.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || demo.bookingStatus === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
-  const filteredPackages = packageOrders.filter(pkg => {
+  const filteredPackages = (packageOrders || []).filter(pkg => {
     const matchesSearch = pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          pkg.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || pkg.orderStatus === filterStatus;
@@ -1377,7 +1396,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users
+                    {(users || [])
                       .filter(user => {
                         const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                             user.displayName?.toLowerCase().includes(searchTerm.toLowerCase());
