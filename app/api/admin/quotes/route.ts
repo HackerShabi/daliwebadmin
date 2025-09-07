@@ -38,14 +38,12 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      data: {
-        quotes: transformedQuotes,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
+      data: transformedQuotes,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
     });
   } catch (error) {

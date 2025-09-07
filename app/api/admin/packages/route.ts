@@ -41,14 +41,12 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      data: {
-        packages: transformedPackages,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
+      data: transformedPackages,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
     });
   } catch (error) {

@@ -40,14 +40,12 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      data: {
-        demos: transformedDemos,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit)
-        }
+      data: transformedDemos,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
     });
   } catch (error) {
