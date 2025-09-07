@@ -1255,10 +1255,12 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                             (demo.categoryInfo?.category || demo.selectedCategory) === 'creative' ? 'bg-pink-100 text-pink-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {(demo.categoryInfo?.category || demo.selectedCategory) ? 
-                              ((demo.categoryInfo?.category || demo.selectedCategory).charAt(0).toUpperCase() + (demo.categoryInfo?.category || demo.selectedCategory).slice(1)) : 
-                              'Not Selected'
-                            }
+                            {(() => {
+                            const category = demo.categoryInfo?.category || demo.selectedCategory || "";
+                            return category 
+                              ? category.charAt(0).toUpperCase() + category.slice(1)
+                              : 'Not Selected';
+                          })()}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
