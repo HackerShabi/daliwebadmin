@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
     
     const usersCollection = db.collection('users');
     
-    // Get query parameters
-    const { searchParams } = new URL(request.url);
+    // Get query parameters - using nextUrl to avoid dynamic server error
+    const { searchParams } = request.nextUrl;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
