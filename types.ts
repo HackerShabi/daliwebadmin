@@ -44,6 +44,10 @@ export interface DemoBooking {
   preferredTime: string;
   message?: string;
   selectedCategory?: string;
+  categoryInfo?: {
+    category: string;
+    subcategory?: string;
+  };
   paymentStatus: string;
   paymentAmount: number;
   bookingStatus: string;
