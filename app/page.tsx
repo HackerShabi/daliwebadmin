@@ -50,8 +50,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     try {
       setLoading(true);
       
-      // Define API URL for all requests - use local Next.js API routes
-      const apiUrl = window.location.origin;
+      // Define API URL for all requests - use backend API
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://daliwebagencybackend.onrender.com';
       
       // Fetch real dashboard statistics
       try {
@@ -136,19 +136,19 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         setQuotes([]);
       }
 
-      // Try to fetch real demo bookings from local API
+      // Try to fetch real demo bookings from admin API
       try {
-        console.log('Fetching demos from:', `${apiUrl}/api/demo`);
-        const demosResponse = await fetch(`${apiUrl}/api/demo`);
+        console.log('Fetching demos from:', `${apiUrl}/api/admin/demos`);
+        const demosResponse = await fetch(`${apiUrl}/api/admin/demos`);
         console.log('Demos response status:', demosResponse.status);
         if (demosResponse.ok) {
           const demosData = await demosResponse.json();
           console.log('Demos data received:', demosData);
-          if (demosData.bookings) {
-            setDemoBookings(demosData.bookings || []);
-            console.log('Demo bookings set:', demosData.bookings?.length || 0, 'items');
+          if (demosData.success) {
+            setDemoBookings(demosData.data || []);
+            console.log('Demo bookings set:', demosData.data?.length || 0, 'items');
           } else {
-            console.error('Demos API returned no bookings', demosData);
+            console.error('Demos API returned success: false', demosData);
             setDemoBookings([]);
           }
         } else {
@@ -160,19 +160,19 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         setDemoBookings([]);
       }
 
-      // Try to fetch real package orders from local API
+      // Try to fetch real package orders from admin API
       try {
-        console.log('Fetching packages from:', `${apiUrl}/api/packages`);
-        const packagesResponse = await fetch(`${apiUrl}/api/packages`);
+        console.log('Fetching packages from:', `${apiUrl}/api/admin/packages`);
+        const packagesResponse = await fetch(`${apiUrl}/api/admin/packages`);
         console.log('Packages response status:', packagesResponse.status);
         if (packagesResponse.ok) {
           const packagesData = await packagesResponse.json();
           console.log('Packages data received:', packagesData);
-          if (packagesData.orders) {
-            setPackageOrders(packagesData.orders || []);
-            console.log('Package orders set:', packagesData.orders?.length || 0, 'items');
+          if (packagesData.success) {
+            setPackageOrders(packagesData.data || []);
+            console.log('Package orders set:', packagesData.data?.length || 0, 'items');
           } else {
-            console.error('Packages API returned no orders', packagesData);
+            console.error('Packages API returned success: false', packagesData);
             setPackageOrders([]);
           }
         } else {
@@ -403,7 +403,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Vertical Sidebar */}
-      <div className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+      <div className="hidden lg:flex w-64 bg-white shadow-lg border-r border-gray-200 flex-col">
         {/* Sidebar Header */}
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-900">DaliWeb Admin</h1>
@@ -456,8 +456,35 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
+        {/* Mobile Navigation */}
+        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-bold text-gray-900">DaliWeb Admin</h1>
+            <div className="flex items-center space-x-2">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+                className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="overview">Overview</option>
+                <option value="quotes">Quote Requests</option>
+                <option value="demos">Demo Bookings</option>
+                <option value="packages">Package Orders</option>
+                <option value="auth">Authentication</option>
+                <option value="users">User Info</option>
+              </select>
+              <button
+                onClick={onLogout}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+        
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <header className="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
@@ -481,13 +508,13 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-4 lg:p-6 overflow-auto">
 
         {/* Overview Tab */}
         {activeTab === 'overview' && stats && (
           <div className="space-y-8">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
               <div 
                 onClick={() => setActiveTab('quotes')}
                 className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow duration-200 hover:bg-blue-50"
@@ -748,7 +775,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900">Users ({users.length})</h3>
               </div>
-              <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded-lg border border-gray-200">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -1024,29 +1051,29 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900">Quote Requests ({filteredQuotes.length})</h3>
               </div>
-              <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded-lg border border-gray-200">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Contact
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Business Type
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Priority
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Source
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -1159,32 +1186,32 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900">Demo Bookings ({filteredDemos.length})</h3>
               </div>
-              <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <div className="overflow-x-auto max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 rounded-lg border border-gray-200">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Contact
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Business Type
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Preferred Date/Time
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Payment
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -1208,19 +1235,28 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <Building className="h-4 w-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-900 capitalize">{demo.businessType}</span>
+                            <div>
+                              <div className="text-sm text-gray-900 capitalize">
+                                {demo.categoryInfo?.category || demo.selectedCategory || 'Not Selected'}
+                              </div>
+                              {demo.categoryInfo?.subcategory && (
+                                <div className="text-xs text-gray-500">
+                                  {demo.categoryInfo.subcategory}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            demo.selectedCategory === 'business' ? 'bg-blue-100 text-blue-800' :
-                            demo.selectedCategory === 'industry' ? 'bg-green-100 text-green-800' :
-                            demo.selectedCategory === 'ecommerce' ? 'bg-purple-100 text-purple-800' :
-                            demo.selectedCategory === 'creative' ? 'bg-pink-100 text-pink-800' :
+                            (demo.categoryInfo?.category || demo.selectedCategory) === 'business' ? 'bg-blue-100 text-blue-800' :
+                            (demo.categoryInfo?.category || demo.selectedCategory) === 'industry' ? 'bg-green-100 text-green-800' :
+                            (demo.categoryInfo?.category || demo.selectedCategory) === 'ecommerce' ? 'bg-purple-100 text-purple-800' :
+                            (demo.categoryInfo?.category || demo.selectedCategory) === 'creative' ? 'bg-pink-100 text-pink-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {demo.selectedCategory ? 
-                              demo.selectedCategory.charAt(0).toUpperCase() + demo.selectedCategory.slice(1) : 
+                            {(demo.categoryInfo?.category || demo.selectedCategory) ? 
+                              ((demo.categoryInfo?.category || demo.selectedCategory).charAt(0).toUpperCase() + (demo.categoryInfo?.category || demo.selectedCategory).slice(1)) : 
                               'Not Selected'
                             }
                           </span>
@@ -1328,12 +1364,12 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -1465,31 +1501,31 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Contact
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Business Type
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Package
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Price
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Payment Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Order Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -1513,19 +1549,28 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <Building className="h-4 w-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-900">{pkg.businessType}</span>
+                            <div>
+                              <div className="text-sm text-gray-900 capitalize">
+                                {pkg.categoryInfo?.category || pkg.selectedCategory || 'Not Selected'}
+                              </div>
+                              {pkg.categoryInfo?.subcategory && (
+                                <div className="text-xs text-gray-500">
+                                  {pkg.categoryInfo.subcategory}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            pkg.selectedCategory === 'business' ? 'bg-blue-100 text-blue-800' :
-                            pkg.selectedCategory === 'industry' ? 'bg-green-100 text-green-800' :
-                            pkg.selectedCategory === 'ecommerce' ? 'bg-purple-100 text-purple-800' :
-                            pkg.selectedCategory === 'creative' ? 'bg-pink-100 text-pink-800' :
+                            (pkg.categoryInfo?.category || pkg.selectedCategory) === 'business' ? 'bg-blue-100 text-blue-800' :
+                            (pkg.categoryInfo?.category || pkg.selectedCategory) === 'industry' ? 'bg-green-100 text-green-800' :
+                            (pkg.categoryInfo?.category || pkg.selectedCategory) === 'ecommerce' ? 'bg-purple-100 text-purple-800' :
+                            (pkg.categoryInfo?.category || pkg.selectedCategory) === 'creative' ? 'bg-pink-100 text-pink-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {pkg.selectedCategory ? 
-                              pkg.selectedCategory.charAt(0).toUpperCase() + pkg.selectedCategory.slice(1) : 
+                            {(pkg.categoryInfo?.category || pkg.selectedCategory) ? 
+                              ((pkg.categoryInfo?.category || pkg.selectedCategory).charAt(0).toUpperCase() + (pkg.categoryInfo?.category || pkg.selectedCategory).slice(1)) : 
                               'Not Selected'
                             }
                           </span>
@@ -1691,6 +1736,28 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Demo Booking Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      {('categoryInfo' in selectedItem && selectedItem.categoryInfo) && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Category Information</span>
+                        <div className="mt-1 space-y-2">
+                          <div className="flex items-center">
+                            <Building className="h-4 w-4 text-gray-400 mr-1" />
+                            <span className="text-sm text-gray-900 capitalize">{selectedItem.categoryInfo.category}</span>
+                          </div>
+                          {selectedItem.categoryInfo.subcategory && (
+                            <div className="flex items-center">
+                              <span className="text-xs text-gray-500 ml-5">Subcategory: {selectedItem.categoryInfo.subcategory}</span>
+                            </div>
+                          )}
+                          {selectedItem.categoryInfo.description && (
+                            <div className="ml-5">
+                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">User Description</span>
+                              <p className="text-sm text-gray-900 mt-1">{selectedItem.categoryInfo.description}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      )}
                       {('preferredDate' in selectedItem || 'preferredTime' in selectedItem) && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Preferred Date & Time</span>
@@ -1758,6 +1825,28 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 mb-3">Package Order Details</h4>
                     <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      {('categoryInfo' in selectedItem && selectedItem.categoryInfo) && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Category Information</span>
+                        <div className="mt-1 space-y-2">
+                          <div className="flex items-center">
+                            <Building className="h-4 w-4 text-gray-400 mr-1" />
+                            <span className="text-sm text-gray-900 capitalize">{selectedItem.categoryInfo.category}</span>
+                          </div>
+                          {selectedItem.categoryInfo.subcategory && (
+                            <div className="flex items-center">
+                              <span className="text-xs text-gray-500 ml-5">Subcategory: {selectedItem.categoryInfo.subcategory}</span>
+                            </div>
+                          )}
+                          {selectedItem.categoryInfo.description && (
+                            <div className="ml-5">
+                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">User Description</span>
+                              <p className="text-sm text-gray-900 mt-1">{selectedItem.categoryInfo.description}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      )}
                       {('packageType' in selectedItem || 'packagePrice' in selectedItem) && (
                       <div>
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Package Information</span>
