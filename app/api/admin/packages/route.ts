@@ -39,16 +39,22 @@ export async function GET(request: NextRequest) {
       updatedAt: pkg.updatedAt || new Date()
     }));
     
-    return NextResponse.json({
+    console.log('CRITICAL: Returning packages data as ARRAY directly, not nested object');
+    
+    const response = {
       success: true,
-      data: transformedPackages,
+      data: transformedPackages, // This MUST be the array directly
       pagination: {
         page,
         limit,
         total,
         pages: Math.ceil(total / limit)
-      }
-    });
+      },
+      timestamp: new Date().toISOString(),
+      version: '2.0-restructured'
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Packages API error:', error);
     return NextResponse.json(

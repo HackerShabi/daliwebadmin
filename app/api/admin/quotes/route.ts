@@ -36,16 +36,22 @@ export async function GET(request: NextRequest) {
       updatedAt: quote.updatedAt || new Date()
     }));
     
-    return NextResponse.json({
+    console.log('CRITICAL: Returning quotes data as ARRAY directly, not nested object');
+    
+    const response = {
       success: true,
-      data: transformedQuotes,
+      data: transformedQuotes, // This MUST be the array directly
       pagination: {
         page,
         limit,
         total,
         pages: Math.ceil(total / limit)
-      }
-    });
+      },
+      timestamp: new Date().toISOString(),
+      version: '2.0-restructured'
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Quotes API error:', error);
     return NextResponse.json(

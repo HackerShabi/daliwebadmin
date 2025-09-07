@@ -38,16 +38,22 @@ export async function GET(request: NextRequest) {
       updatedAt: demo.updatedAt || new Date()
     }));
     
-    return NextResponse.json({
+    console.log('CRITICAL: Returning demos data as ARRAY directly, not nested object');
+    
+    const response = {
       success: true,
-      data: transformedDemos,
+      data: transformedDemos, // This MUST be the array directly
       pagination: {
         page,
         limit,
         total,
         pages: Math.ceil(total / limit)
-      }
-    });
+      },
+      timestamp: new Date().toISOString(),
+      version: '2.0-restructured'
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Demos API error:', error);
     return NextResponse.json(
