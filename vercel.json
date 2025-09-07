@@ -3,17 +3,5 @@
     "app/api/**/*.ts": {
       "runtime": "nodejs18.x"
     }
-  },
-  "env": {
-    "MONGODB_URI": "@mongodb-uri",
-    "NEXTAUTH_SECRET": "@nextauth-secret",
-    "NEXTAUTH_URL": "@nextauth-url"
-  },
-  "build": {
-    "env": {
-      "MONGODB_URI": "@mongodb-uri",
-      "NEXTAUTH_SECRET": "@nextauth-secret",
-      "NEXTAUTH_URL": "@nextauth-url"
-    }
   }
 }

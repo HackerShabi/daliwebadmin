@@ -1,5 +1,13 @@
 import { MongoClient, Db } from 'mongodb';
 
+// Debug logging for environment variables
+console.log('Environment check:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+if (process.env.MONGODB_URI) {
+  console.log('MONGODB_URI preview:', process.env.MONGODB_URI.substring(0, 20) + '...');
+}
+
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
