@@ -47,6 +47,7 @@ export interface DemoBooking {
   categoryInfo?: {
     category: string;
     subcategory?: string;
+    description?: string;
   };
   paymentStatus: string;
   paymentAmount: number;
@@ -64,6 +65,7 @@ export interface PackageOrder {
   categoryInfo?: {
     category: string;
     subcategory?: string;
+    description?: string;
   };
   packageType: string;
   packagePrice: number;
