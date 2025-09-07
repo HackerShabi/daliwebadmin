@@ -61,6 +61,10 @@ export interface PackageOrder {
   phone: string;
   businessType: string;
   selectedCategory?: string;
+  categoryInfo?: {
+    category: string;
+    subcategory?: string;
+  };
   packageType: string;
   packagePrice: number;
   paymentStatus: string;
