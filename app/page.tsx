@@ -924,7 +924,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Created</span>
                           <p className="text-sm text-gray-900 mt-1">
-                            {format(new Date(selectedItem.creationTime), 'MMM dd, yyyy \\at HH:mm')}
+                            {selectedItem.creationTime ? format(new Date(selectedItem.creationTime), 'MMM dd, yyyy \\at HH:mm') : 'N/A'}
                           </p>
                         </div>
                       )}
@@ -932,7 +932,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         <div>
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</span>
                           <p className="text-sm text-gray-900 mt-1">
-                            {format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm')}
+                            {selectedItem.lastSignInTime ? format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm') : 'Never signed in'}
                           </p>
                         </div>
                       )}
@@ -983,20 +983,20 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {format(new Date(user.creationTime), 'MMM dd, yyyy')}
+                            {user.creationTime ? format(new Date(user.creationTime), 'MMM dd, yyyy') : 'N/A'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {format(new Date(user.creationTime), 'HH:mm')}
+                            {user.creationTime ? format(new Date(user.creationTime), 'HH:mm') : 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {user.lastSignInTime ? (
                             <div>
                               <div className="text-sm text-gray-900">
-                                {format(new Date(user.lastSignInTime), 'MMM dd, yyyy')}
+                                {user.lastSignInTime ? format(new Date(user.lastSignInTime), 'MMM dd, yyyy') : 'Never'}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {format(new Date(user.lastSignInTime), 'HH:mm')}
+                                {user.lastSignInTime ? format(new Date(user.lastSignInTime), 'HH:mm') : 'N/A'}
                               </div>
                             </div>
                           ) : (
@@ -2020,7 +2020,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
                         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sign In</span>
                         <div className="mt-1">
                           <span className="text-sm text-gray-900">
-                            {format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm')}
+                            {selectedItem.lastSignInTime ? format(new Date(selectedItem.lastSignInTime), 'MMM dd, yyyy \\at HH:mm') : 'Never signed in'}
                           </span>
                         </div>
                       </div>
