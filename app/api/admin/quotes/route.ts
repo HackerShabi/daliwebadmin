@@ -23,8 +23,9 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .toArray();
     
-    // Transform quotes to match expected format
-    const transformedQuotes = quotes.map(quote => ({
+    // Transform quotes to match expected format with safety check
+    const quotesArray = Array.isArray(quotes) ? quotes : [];
+    const transformedQuotes = quotesArray.map(quote => ({
       id: quote._id.toString(),
       name: quote.name || 'Unknown',
       email: quote.email || 'No email',

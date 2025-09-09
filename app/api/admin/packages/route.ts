@@ -23,8 +23,9 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .toArray();
     
-    // Transform packages to match expected format
-    const transformedPackages = packages.map(pkg => ({
+    // Transform packages to match expected format with safety check
+    const packagesArray = Array.isArray(packages) ? packages : [];
+    const transformedPackages = packagesArray.map(pkg => ({
       id: pkg._id.toString(),
       name: pkg.name || 'Unknown',
       email: pkg.email || 'No email',

@@ -30,8 +30,9 @@ export async function GET(request: NextRequest) {
     const total = await usersCollection.countDocuments();
     console.log(`Found ${users.length} users out of ${total} total`);
     
-    // Transform users data
-    const transformedUsers = users.map(user => ({
+    // Transform users data with safety check
+    const usersArray = Array.isArray(users) ? users : [];
+    const transformedUsers = usersArray.map(user => ({
       id: user._id.toString(),
       uid: user.uid || 'N/A',
       email: user.email || 'N/A',

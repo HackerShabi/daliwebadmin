@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
       .toArray();
     
     // Transform demos to match expected format
-    const transformedDemos = demos.map(demo => ({
+    // Transform demos with safety check
+    const demosArray = Array.isArray(demos) ? demos : [];
+    const transformedDemos = demosArray.map(demo => ({
       id: demo._id.toString(),
       name: demo.name || 'Unknown',
       email: demo.email || 'No email',
